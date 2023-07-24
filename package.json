@@ -1,6 +1,6 @@
 {
   "name": "@byteflow-inc/sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This is an SDK for Byteflow. An SMS messaging provider that let's you start sending messages without the wait.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
