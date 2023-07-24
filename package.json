@@ -20,7 +20,9 @@
   "author": "Bryght, LLC",
   "license": "MIT",
   "dependencies": {
-    "ofetch": "^1.1.1"
+    "ofetch": "^1.1.1",
+    "qrate": "^1.2.1",
+    "throttled-queue": "^2.1.4"
   },
   "devDependencies": {
     "prettier": "^3.0.0",
