@@ -1,7 +1,9 @@
 // tslint:disable-next-line:no-var-requires
-const { ofetch } = require('ofetch')
+const axios = require("axios")
 // tslint:disable-next-line:no-var-requires
 const throttledQueue = require('throttled-queue');
+// tslint:disable-next-line:no-var-requires
+const fs = require("fs")
 
 const throttle = throttledQueue(1, 1000); // at most 1 request per second.
 
@@ -14,16 +16,35 @@ export class ByteFlow {
     if (this.#API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     throttle(async () => {
       if (this.#API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-      await ofetch('https://api.byteflow.app/sendMessage', {
-        method: 'POST',
+      await axios.post('https://api.byteflow.app/sendMessage', {
+        destination_number,
+        message_content,
+      }, {
         headers: {
           api_key: this.#API_KEY,
         },
-        body: {
-          destination_number,
-          message_content,
-        },
       });
     });
+  }
+  async sendMessageWithMedia({ message_content, destination_number, mediaPath }: {
+    message_content: string,
+    destination_number: string,
+    mediaPath: string
+  }){
+    const preSignedURLRequest = await axios.post('https://api.byteflow.app/uploadMedia', {
+      filename: mediaPath.substring(mediaPath.lastIndexOf('/')+1),
+    }, {
+      headers: {
+        api_key: this.#API_KEY,
+      }
+    });
+    const uploadURL : string = preSignedURLRequest.data.uploadURL;
+    const getURL : string = preSignedURLRequest.data.getURL;
+    const file = fs.readFileSync(mediaPath);
+    await axios.put(uploadURL, file);
+    await this.sendMessage({
+      message_content: message_content + " " + getURL,
+      destination_number
+    })
   }
 }

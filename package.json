@@ -1,6 +1,6 @@
 {
   "name": "@byteflow-inc/sdk",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "This is an SDK for Byteflow. An SMS messaging provider that let's you start sending messages without the wait.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -20,7 +20,8 @@
   "author": "Bryght, LLC",
   "license": "MIT",
   "dependencies": {
-    "ofetch": "^1.1.1",
+    "axios": "^1.4.0",
+    "fs": "^0.0.1-security",
     "qrate": "^1.2.1",
     "throttled-queue": "^2.1.4"
   },
