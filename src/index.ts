@@ -26,6 +26,19 @@ export class ByteFlow {
       });
     });
   }
+  async registerNumber({ phone_number }: { phone_number: string; }) {
+    if (this.#API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
+    throttle(async () => {
+      if (this.#API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
+      await axios.post('https://api.byteflow.app/registerNumber', {
+        phone_number
+      }, {
+        headers: {
+          api_key: this.#API_KEY,
+        },
+      });
+    });
+  }
   async sendMessageWithMedia({ message_content, destination_number, mediaPath }: {
     message_content: string,
     destination_number: string,
