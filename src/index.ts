@@ -39,6 +39,15 @@ export class ByteFlow {
       });
     });
   }
+  async lookupPhoneNumber({ phone_number, advanced_mode }: { phone_number: string; advanced_mode: boolean | undefined; }) {
+    if (this.#API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
+    const res = await axios.get(`https://api.byteflow.app/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
+      headers: {
+        api_key: this.#API_KEY,
+      },
+    });
+    return res.data
+  }
   async sendMessageWithMedia({ message_content, destination_number, mediaPath }: {
     message_content: string,
     destination_number: string,
