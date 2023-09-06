@@ -1,5 +1,8 @@
 import axios from "axios"
 import { readFileSync } from "fs";
+import { nanoid } from "nanoid"
+
+const baseURL = 'https://api.byteflow.app'
 function wait (milliseconds : number) {
   return new Promise(
       resolve => setTimeout(resolve, milliseconds)
@@ -16,7 +19,6 @@ const retry = (axios : any, options = {}) => {
   }
 }
 
-
 export class ByteFlow {
   private readonly API_KEY: string | undefined = undefined;
   private readonly client : any | undefined = undefined;
@@ -27,18 +29,19 @@ export class ByteFlow {
   }
   async sendMessage({ message_content, destination_number }: { message_content: string; destination_number: string }) {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    await this.client.post('https://api.byteflow.app/sendMessage', {
+    await this.client.post(`${baseURL}/sendMessage`, {
       destination_number,
       message_content,
     }, {
       headers: {
         api_key: this.API_KEY,
+        "Retry-Id": nanoid()
       },
     });
   }
   async registerNumber({ phone_number }: { phone_number: string; }) {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    await this.client.post('https://api.byteflow.app/registerNumber', {
+    await this.client.post(`${baseURL}/registerNumber`, {
       phone_number
     }, {
       headers: {
@@ -48,7 +51,7 @@ export class ByteFlow {
   }
   async lookupPhoneNumber({ phone_number, advanced_mode }: { phone_number: string; advanced_mode: boolean | undefined; }) {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    const res = await this.client.get(`https://api.byteflow.app/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
+    const res = await this.client.get(`${baseURL}/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
       headers: {
         api_key: this.API_KEY,
       },
@@ -60,7 +63,7 @@ export class ByteFlow {
     destination_number: string,
     mediaPath: string
   }){
-    const preSignedURLRequest = await this.client.post('https://api.byteflow.app/uploadMedia', {
+    const preSignedURLRequest = await this.client.post(`${baseURL}/uploadMedia`, {
       filename: mediaPath.substring(mediaPath.lastIndexOf('/')+1),
     }, {
       headers: {
