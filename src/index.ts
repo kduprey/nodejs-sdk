@@ -1,15 +1,16 @@
 import axios from "axios"
 import { readFileSync } from "fs";
 import { nanoid } from "nanoid"
+import { ISendMessageResponse, IRegisterNumberResponse, ILookupPhoneNumber } from "./types"
 
 const baseURL = 'https://api.byteflow.app'
-function wait (milliseconds : number) {
+function wait(milliseconds: number) {
   return new Promise(
-      resolve => setTimeout(resolve, milliseconds)
+    resolve => setTimeout(resolve, milliseconds)
   )
 }
-const retry = (axios : any, options = {}) => {
-  return async function (error : any) {
+const retry = (axios: any, options = {}) => {
+  return async function(error: any) {
     if (error.response.status == 420) {
       await wait(error.response.headers['Retry-After'] * 1000) // Convert seconds to milliseconds
       return axios(error.config)
@@ -21,15 +22,15 @@ const retry = (axios : any, options = {}) => {
 
 export class ByteFlow {
   private readonly API_KEY: string | undefined = undefined;
-  private readonly client : any | undefined = undefined;
+  private readonly client: any | undefined = undefined;
   constructor(API_KEY: string) {
     this.API_KEY = API_KEY;
     this.client = axios.create()
     this.client.interceptors.response.use(null, retry(this.client))
   }
-  async sendMessage({ message_content, destination_number }: { message_content: string; destination_number: string }) {
+  async sendMessage({ message_content, destination_number }: { message_content: string; destination_number: string }): Promise<ISendMessageResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    await this.client.post(`${baseURL}/sendMessage`, {
+    const res = await this.client.post(`${baseURL}/sendMessage`, {
       destination_number,
       message_content,
     }, {
@@ -38,18 +39,20 @@ export class ByteFlow {
         "Retry-Id": nanoid()
       },
     });
+    return res
   }
-  async registerNumber({ phone_number }: { phone_number: string; }) {
+  async registerNumber({ phone_number }: { phone_number: string; }): Promise<IRegisterNumberResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    await this.client.post(`${baseURL}/registerNumber`, {
+    const res = await this.client.post(`${baseURL}/registerNumber`, {
       phone_number
     }, {
       headers: {
         api_key: this.API_KEY,
       },
     });
+    return res
   }
-  async lookupPhoneNumber({ phone_number, advanced_mode }: { phone_number: string; advanced_mode: boolean | undefined; }) {
+  async lookupPhoneNumber({ phone_number, advanced_mode }: { phone_number: string; advanced_mode: boolean | undefined; }): Promise<ILookupPhoneNumber> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     const res = await this.client.get(`${baseURL}/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
       headers: {
@@ -62,21 +65,22 @@ export class ByteFlow {
     message_content: string,
     destination_number: string,
     mediaPath: string
-  }){
+  }): Promise<ISendMessageResponse> {
     const preSignedURLRequest = await this.client.post(`${baseURL}/uploadMedia`, {
-      filename: mediaPath.substring(mediaPath.lastIndexOf('/')+1),
+      filename: mediaPath.substring(mediaPath.lastIndexOf('/') + 1),
     }, {
       headers: {
         api_key: this.API_KEY,
       }
     });
-    const uploadURL : string = preSignedURLRequest.data.uploadURL;
-    const getURL : string = preSignedURLRequest.data.getURL;
+    const uploadURL: string = preSignedURLRequest.data.uploadURL;
+    const getURL: string = preSignedURLRequest.data.getURL;
     const file = readFileSync(mediaPath);
     await this.client.put(uploadURL, file);
-    await this.sendMessage({
+    const res = await this.sendMessage({
       message_content: message_content + " " + getURL,
       destination_number
     })
+    return res
   }
 }
