@@ -42,5 +42,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ByteflowInc/sdk.git"
+	"dependencies": {
+		"axios": "^1.6.2",
+		"axios-retry": "^3.9.1",
+		"nanoid": "^5.0.3"
+	},
   }
 }
