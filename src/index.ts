@@ -15,6 +15,7 @@ import type {
 
 export * from './types';
 export class ByteFlow {
+	private readonly BASE_URL = 'https://api.byteflow.app';
   private readonly API_KEY: string | undefined = undefined;
   private readonly client: any | undefined = undefined;
   constructor(API_KEY: string) {
