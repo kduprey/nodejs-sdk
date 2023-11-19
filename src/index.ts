@@ -36,6 +36,7 @@ export class ByteFlow {
 			},
 		});
 	}
+	public async sendMessage({ messageContent, destinationNumber }: SendMessageParams): Promise<SendMessageResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     const res = await this.client.post(`${baseURL}/sendMessage`, {
       destination_number,
@@ -43,12 +44,7 @@ export class ByteFlow {
     }, {
       headers: {
         api_key: this.API_KEY,
-        "Retry-Id": nanoid()
-      },
-    });
-    return res
-  }
-  async registerNumber({ phone_number }: { phone_number: string; }): Promise<IRegisterNumberResponse> {
+	public async registerNumber({ phoneNumber }: RegisterNumberParams): Promise<RegisterNumberResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     const res = await this.client.post(`${baseURL}/registerNumber`, {
       phone_number
@@ -56,24 +52,17 @@ export class ByteFlow {
       headers: {
         api_key: this.API_KEY,
       },
-    });
-    return res
-  }
-  async lookupPhoneNumber({ phone_number, advanced_mode }: { phone_number: string; advanced_mode: boolean | undefined; }): Promise<ILookupPhoneNumber> {
+	public async lookupPhoneNumber({ phoneNumber, advancedMode }: LookupPhoneNumberParams): Promise<LookupPhoneNumber> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     const res = await this.client.get(`${baseURL}/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
       headers: {
         api_key: this.API_KEY,
       },
-    });
-    return res.data
-  }
-  async sendMessageWithMedia({ message_content, destination_number, mediaPath }: {
-    message_content: string,
-    destination_number: string,
-    mediaPath: string
-  }): Promise<ISendMessageResponse> {
-    const preSignedURLRequest = await this.client.post(`${baseURL}/uploadMedia`, {
+	public async sendMessageWithMedia({
+		messageContent,
+		destinationNumber,
+		mediaPath,
+	}: SendMessageWithMediaParams): Promise<SendMessageResponse> {
       filename: mediaPath.substring(mediaPath.lastIndexOf('/') + 1),
     }, {
       headers: {
