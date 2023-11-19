@@ -38,45 +38,96 @@ export class ByteFlow {
 	}
 	public async sendMessage({ messageContent, destinationNumber }: SendMessageParams): Promise<SendMessageResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    const res = await this.client.post(`${baseURL}/sendMessage`, {
-      destination_number,
-      message_content,
-    }, {
+		try {
+			const res = await this.client.post<SendMessageResponse>(
+				`${this.BASE_URL}/sendMessage`,
+				{
+					destination_number: destinationNumber,
+					message_content: messageContent,
+				},
+				{
       headers: {
         api_key: this.API_KEY,
+						'Retry-Id': nanoid(),
+					},
+					validateStatus: (status) => status < 500,
+				}
+			);
+
+			return res.data;
+		} catch (error) {
+			console.error(error);
+			throw new Error("Couldn't send message - see logs");
+		}
 	public async registerNumber({ phoneNumber }: RegisterNumberParams): Promise<RegisterNumberResponse> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    const res = await this.client.post(`${baseURL}/registerNumber`, {
-      phone_number
-    }, {
+		try {
+			const res = await this.client.post<RegisterNumberResponse>(
+				`${this.BASE_URL}/registerNumber`,
+				{
+					phone_number: phoneNumber,
+				},
+				{
       headers: {
         api_key: this.API_KEY,
       },
+					validateStatus: (status) => status < 500,
+				}
+			);
+			return res.data;
+		} catch (error) {
+			console.error(error);
+			throw new Error("Couldn't register number - see logs");
+		}
+	}
 	public async lookupPhoneNumber({ phoneNumber, advancedMode }: LookupPhoneNumberParams): Promise<LookupPhoneNumber> {
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
-    const res = await this.client.get(`${baseURL}/lookupNumber?phone_number=${phone_number}${advanced_mode === true ? "&advanced_mode=true" : ""}`, {
+		try {
+			const res = await this.client.get<LookupPhoneNumber>(
+				`${this.BASE_URL}/lookupNumber?phone_number=${phoneNumber}${
+					advancedMode === true ? '&advanced_mode=true' : ''
+				}`,
+				{
       headers: {
         api_key: this.API_KEY,
       },
+					validateStatus: (status) => status < 500,
+				}
+			);
+			return res.data;
+		} catch (error) {
+			console.error(error);
+			throw new Error("Couldn't lookup number - see logs");
+		}
 	public async sendMessageWithMedia({
 		messageContent,
 		destinationNumber,
 		mediaPath,
 	}: SendMessageWithMediaParams): Promise<SendMessageResponse> {
+		try {
+			const preSignedURLRequest = await this.client.post<{ uploadURL: string; getURL: string }>(
+				`${this.BASE_URL}/uploadMedia`,
+				{
       filename: mediaPath.substring(mediaPath.lastIndexOf('/') + 1),
-    }, {
+				},
+				{
       headers: {
         api_key: this.API_KEY,
+					},
       }
-    });
+			);
     const uploadURL: string = preSignedURLRequest.data.uploadURL;
     const getURL: string = preSignedURLRequest.data.getURL;
     const file = readFileSync(mediaPath);
     await this.client.put(uploadURL, file);
     const res = await this.sendMessage({
-      message_content: message_content + " " + getURL,
-      destination_number
-    })
-    return res
+				messageContent: `${messageContent} ${getURL}`,
+				destinationNumber,
+			});
+			return res;
+		} catch (error) {
+			console.error(error);
+			throw new Error("Couldn't send message with media - see logs");
+		}
   }
 }
