@@ -1,25 +1,19 @@
-import axios from "axios"
-import { readFileSync } from "fs";
-import { nanoid } from "nanoid"
-import { ISendMessageResponse, IRegisterNumberResponse, ILookupPhoneNumber } from "./types"
+import { readFileSync } from 'node:fs';
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import { nanoid } from 'nanoid';
+import axiosRetry from 'axios-retry';
+import type {
+	SendMessageResponse,
+	RegisterNumberResponse,
+	LookupPhoneNumber,
+	SendMessageWithMediaParams,
+	LookupPhoneNumberParams,
+	RegisterNumberParams,
+	SendMessageParams,
+} from './types';
 
-const baseURL = 'https://api.byteflow.app'
-function wait(milliseconds: number) {
-  return new Promise(
-    resolve => setTimeout(resolve, milliseconds)
-  )
-}
-const retry = (axios: any, options = {}) => {
-  return async function(error: any) {
-    if (error.response.status == 420) {
-      await wait(error.response.headers['Retry-After'] * 1000) // Convert seconds to milliseconds
-      return axios(error.config)
-    } else {
-      throw error
-    }
-  }
-}
-
+export * from './types';
 export class ByteFlow {
   private readonly API_KEY: string | undefined = undefined;
   private readonly client: any | undefined = undefined;
