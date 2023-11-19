@@ -20,10 +20,22 @@ export class ByteFlow {
 	private readonly client: AxiosInstance;
   constructor(API_KEY: string) {
     this.API_KEY = API_KEY;
-    this.client = axios.create()
-    this.client.interceptors.response.use(null, retry(this.client))
-  }
-  async sendMessage({ message_content, destination_number }: { message_content: string; destination_number: string }): Promise<ISendMessageResponse> {
+		this.client = axios.create();
+
+		axiosRetry(this.client, {
+			retries: 3,
+			retryDelay: (retryCount, error) => error.response?.headers['retry-after'] * 1000,
+			retryCondition: (error) => {
+				if (axiosRetry.isNetworkOrIdempotentRequestError(error)) return true;
+				switch (error.response?.status) {
+					case 420:
+						return true;
+					default:
+						return false;
+				}
+			},
+		});
+	}
     if (this.API_KEY === undefined) throw new Error('API KEY IS NOT DEFINED');
     const res = await this.client.post(`${baseURL}/sendMessage`, {
       destination_number,
