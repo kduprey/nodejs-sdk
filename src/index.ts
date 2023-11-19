@@ -17,7 +17,7 @@ export * from './types';
 export class ByteFlow {
 	private readonly BASE_URL = 'https://api.byteflow.app';
   private readonly API_KEY: string | undefined = undefined;
-  private readonly client: any | undefined = undefined;
+	private readonly client: AxiosInstance;
   constructor(API_KEY: string) {
     this.API_KEY = API_KEY;
     this.client = axios.create()
